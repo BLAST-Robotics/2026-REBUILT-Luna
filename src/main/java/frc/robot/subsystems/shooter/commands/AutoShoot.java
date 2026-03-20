@@ -1,8 +1,8 @@
-package frc.robot.commands.shooter;
+package frc.robot.subsystems.shooter.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 public class AutoShoot extends Command {
     private final ShooterSubsystem shooter;

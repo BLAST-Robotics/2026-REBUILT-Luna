@@ -1,4 +1,4 @@
-package frc.robot.commands.shooter;
+package frc.robot.subsystems.shooter.commands;
 
 import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj2.command.Command;
