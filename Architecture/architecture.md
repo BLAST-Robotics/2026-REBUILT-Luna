@@ -428,6 +428,46 @@ flowchart TD
 4. Command Scheduler executes button-bound commands and drive control
 5. Subsystems respond to manual commands
 
+## Autonomous vs Manual Control Comparison
+
+### **The Problem Identified**
+
+**Manual Control (Teleop):**
+- ✅ Default drive command active with controller input lambdas
+- ✅ Processes joystick inputs → velocity commands → swerve drive
+- ✅ Works perfectly for manual driving
+
+**Autonomous Control:**
+- ❌ Default drive command still running (reading zero controller inputs)
+- ❌ PathPlanner commands trying to drive simultaneously
+- ❌ **CONFLICT**: Zero velocities from default command vs autonomous path velocities
+- ❌ Robot doesn't move or moves erratically
+
+### **The Fix Applied**
+
+**Modified `Robot.autonomousInit()`:**
+```java
+// CRITICAL FIX: Cancel the default drive command to prevent conflicts
+if (m_robotContainer.getDrivebase() != null) {
+  m_robotContainer.getDrivebase().removeDefaultCommand();
+}
+```
+
+**Modified `Robot.teleopInit()`:**
+```java
+// CRITICAL FIX: Restore the default drive command for manual control
+m_robotContainer.restoreDefaultDriveCommand();
+```
+
+**Result:**
+- ✅ Autonomous: Default command removed, PathPlanner drives exclusively
+- ✅ Teleop: Default command restored, manual control works perfectly
+- ✅ No more conflicting drive commands
+
+### **Why This Happens**
+
+The default drive command (set in RobotContainer constructor) runs continuously and reads controller inputs. During autonomous, controllers aren't touched (inputs = 0), but the command still sends zero velocities to the drive system, conflicting with autonomous path following commands.
+
 ## Overview
 
 This diagram represents the WPILib command-based robot architecture for the FRC robot code:
