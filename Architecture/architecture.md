@@ -314,6 +314,120 @@ flowchart TD
 - Test: Command cancellation and swerve parser initialization
 - Simulation: Simulation-specific initialization and periodic functions
 
+## Manual Controller Control Flow
+
+This flowchart shows how manual control works during teleop mode, including controller inputs, button bindings, and command execution.
+
+```mermaid
+flowchart TD
+    A["Driver Station: Teleop Mode"] --> B["Robot.teleopInit()"]
+    B --> C["Cancel Autonomous Commands"]
+    C --> D["Set Drive Mode"]
+    D --> E["RobotContainer: Manual Control Active"]
+    
+    E --> F["Driver Controller<br/>Port 0"]
+    E --> G["Operator Controller<br/>Port 1"]
+    
+    F --> H["Left Stick Y<br/>Forward/Backward"]
+    F --> I["Left Stick X<br/>Strafe Left/Right"]
+    F --> J["Right Stick X<br/>Turn Left/Right"]
+    F --> K["Right Bumper<br/>Slow Mode 30%"]
+    F --> L["B Button<br/>Auto-Aim Vision"]
+    F --> M["Left Bumper<br/>Invert Drive"]
+    F --> N["Left Trigger<br/>Invert Turn"]
+    F --> O["Back Button<br/>Toggle Slew Rate"]
+    F --> P["Y Button<br/>Run Shooter RPM"]
+    F --> Q["X Button<br/>Run Intake Rollers"]
+    F --> R["A Button<br/>Reverse Intake"]
+    F --> S["POV Up/Down<br/>Intake Pivot"]
+    F --> T["Right Trigger<br/>Zero Gyro"]
+    
+    G --> H2["Left Stick Y<br/>Forward/Backward"]
+    G --> I2["Left Stick X<br/>Strafe Left/Right"]
+    G --> J2["Right Stick X<br/>Turn Left/Right"]
+    G --> K2["Right Bumper<br/>Slow Mode 30%"]
+    G --> L2["B Button<br/>Auto-Aim Vision"]
+    G --> M2["Left Bumper<br/>Invert Drive"]
+    G --> N2["Left Trigger<br/>Invert Turn"]
+    G --> O2["Back Button<br/>Toggle Slew Rate"]
+    G --> P2["Y Button<br/>Run Shooter RPM"]
+    G --> Q2["X Button<br/>Run Intake Rollers"]
+    G --> R2["A Button<br/>Reverse Intake"]
+    G --> S2["POV Up/Down<br/>Intake Pivot"]
+    G --> T2["Right Trigger<br/>Zero Gyro"]
+    
+    H --> U["Drive Command<br/>Translation X"]
+    I --> U
+    J --> U
+    K --> U
+    L --> U
+    M --> U
+    N --> U
+    O --> U
+    
+    H2 --> U
+    I2 --> U
+    J2 --> U
+    K2 --> U
+    L2 --> U
+    M2 --> U
+    N2 --> U
+    O2 --> U
+    
+    U --> V["SwerveSubsystem<br/>driveCommand()"]
+    V --> W["Field Centric Drive<br/>or Robot Centric"]
+    
+    P --> X["RunShooterRPM<br/>Command"]
+    P2 --> X
+    X --> Y["ShooterSubsystem"]
+    
+    Q --> Z["RunIntakeRollersVoltage<br/>Command"]
+    Q2 --> Z
+    Z --> AA["IntakeSubsystem"]
+    
+    R --> BB["Reverse Intake<br/>Command"]
+    R2 --> BB
+    BB --> AA
+    
+    S --> CC["IntakePivotToState<br/>Command"]
+    S2 --> CC
+    CC --> AA
+    
+    T --> DD["Zero Gyro<br/>Command"]
+    T2 --> DD
+    DD --> V
+    
+    W --> EE["Robot Movement<br/>Manual Control"]
+    Y --> FF["Shooter Control<br/>Manual RPM"]
+    AA --> GG["Intake Control<br/>Manual Operation"]
+    
+    EE --> HH["robotPeriodic()<br/>Command Scheduler"]
+    FF --> HH
+    GG --> HH
+```
+
+### Manual Control Overview
+
+**Driver Controller (Port 0) & Operator Controller (Port 1):**
+- **Both controllers have identical button mappings** for redundancy
+- **Drive controls** use left stick (forward/back, strafe) and right stick (turn)
+- **Subsystem controls** for shooter, intake, and drive functions
+- **Modifier buttons** for slow mode, drive inversion, and settings toggles
+
+**Key Features:**
+- **Dual Controller Support**: Both driver and operator can control all functions
+- **Slow Mode**: Right bumper on either controller reduces speed to 30%
+- **Vision Integration**: B button enables Limelight auto-aiming
+- **Drive Customization**: Buttons to invert drive direction, turn direction, and toggle slew rate limiting
+- **Subsystem Commands**: Direct control of shooter RPM, intake rollers, and intake pivot
+
+**Command Flow:**
+1. Driver Station switches to Teleop mode
+2. `Robot.teleopInit()` cancels autonomous and sets manual mode
+3. Controller inputs are processed every 20ms in `robotPeriodic()`
+4. Command Scheduler executes button-bound commands and drive control
+5. Subsystems respond to manual commands
+
 ## Overview
 
 This diagram represents the WPILib command-based robot architecture for the FRC robot code:
