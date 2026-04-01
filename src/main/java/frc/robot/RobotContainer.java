@@ -18,6 +18,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
+import java.nio.file.Path;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -133,6 +134,14 @@ public class RobotContainer
       NamedCommands.registerCommand("shoot", new RunShooterRPM(shooter, intake, () -> frc.robot.Constants.ShooterConstants.SHOOTER_DEFAULT_RPM/60));
       NamedCommands.registerCommand("endShoot", Commands.runOnce(() -> shooter.stop(), shooter));
     }
+    if (drivebase != null) {
+      NamedCommands.registerCommand("jiggle", Commands.run(() -> {
+        drivebase.drive(new edu.wpi.first.math.geometry.Translation2d(), Math.sin(edu.wpi.first.wpilibj.Timer.getFPGATimestamp() * 30.0) * 1.5, false);
+      }, drivebase));
+      NamedCommands.registerCommand("endJiggle", Commands.runOnce(() -> {
+        drivebase.drive(new edu.wpi.first.math.geometry.Translation2d(), 0, false);
+      }, drivebase));
+    }
   }
   
   private void configureBindings()
@@ -175,8 +184,16 @@ public class RobotContainer
     operatorXbox.back().onTrue(toggleSlew);
 
     if (shooter != null) {
-      driverXbox.y().toggleOnTrue(new RunShooterRPM(shooter, intake, () -> 47));
-      operatorXbox.y().toggleOnTrue(new RunShooterRPM(shooter, intake, () -> 47));
+      if (drivebase != null) {
+        Command jiggle1 = Commands.run(() -> drivebase.drive(new edu.wpi.first.math.geometry.Translation2d(), Math.sin(edu.wpi.first.wpilibj.Timer.getFPGATimestamp() * 30.0) * 1.5, false), drivebase);
+        Command jiggle2 = Commands.run(() -> drivebase.drive(new edu.wpi.first.math.geometry.Translation2d(), Math.sin(edu.wpi.first.wpilibj.Timer.getFPGATimestamp() * 30.0) * 1.5, false), drivebase);
+        
+        driverXbox.y().toggleOnTrue(Commands.parallel(new RunShooterRPM(shooter, intake, () -> 47), jiggle1));
+        operatorXbox.y().toggleOnTrue(Commands.parallel(new RunShooterRPM(shooter, intake, () -> 47), jiggle2));
+      } else {
+        driverXbox.y().toggleOnTrue(new RunShooterRPM(shooter, intake, () -> 47));
+        operatorXbox.y().toggleOnTrue(new RunShooterRPM(shooter, intake, () -> 47));
+      }
     }
     
     if (intake != null) {

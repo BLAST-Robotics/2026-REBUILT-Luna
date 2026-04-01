@@ -82,7 +82,7 @@ public final class Constants
     public static final double INDEXER_POWER = 0.8; // Open loop power for indexer
     public static final double INDEXER_REVERSE_POWER = -0.8;
 
-    public static final double SHOOTER_DEFAULT_RPM = 3000.0;
+    public static final double SHOOTER_DEFAULT_RPM = 2500.0;
     public static final double SHOOTER_REVERSE_RPM = -1000.0;
   }
 

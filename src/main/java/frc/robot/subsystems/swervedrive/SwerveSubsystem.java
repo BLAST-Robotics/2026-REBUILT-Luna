@@ -76,7 +76,7 @@ public class SwerveSubsystem extends SubsystemBase
   public boolean doRejectUpdate = false;
   public double maximumSpeed = Constants.MAX_SPEED;
   private final Notifier visionNotifier;
-  
+  private boolean m_hasAppliedOperatorPerspective = false;
 
   // public SwerveSubsystem(File directory)
   // {
@@ -276,6 +276,13 @@ public class SwerveSubsystem extends SubsystemBase
         LimelightHelpers.SetRobotOrientation("limelight", 
             getHeading().getDegrees(), yawRate, pitch, 0, roll, 0);
     }
+
+    if(!m_hasAppliedOperatorPerspective && (DriverStation.isFMSAttached() || DriverStation.isDSAttached())) {
+      DriverStation.getAlliance().ifPresent(allianceColor -> {
+        
+      });
+    }
+
   }
 
   @Override
@@ -298,11 +305,12 @@ public class SwerveSubsystem extends SubsystemBase
       final boolean enableFeedforward = true;
       // Configure AutoBuilder last
       AutoBuilder.configure(
-          this::getPose,
+          //this::getPose,
+          () -> getPose(),
           // Robot pose supplier
           this::resetOdometry,
           // Method to reset odometry (will be called if your auto has a starting pose)
-          this::getRobotVelocity,
+          () -> getRobotVelocity(),
           // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
           (speedsRobotRelative, moduleFeedForwards) -> {
             if (enableFeedforward)
@@ -322,7 +330,7 @@ public class SwerveSubsystem extends SubsystemBase
               // PPHolonomicController is the built in path following controller for holonomic drive trains
               new PIDConstants(1.0, 0.0, 0.0),
               // Translation PID constants
-              new PIDConstants(5.0, 0.0, 0.32)  //used to be 5.0, 0.0, 0.0 for both
+              new PIDConstants(2.0, 0.0, 0.0)  //used to be 5.0, 0.0, 0.0 for both
               // Rotation PID constants
           ),
           config,

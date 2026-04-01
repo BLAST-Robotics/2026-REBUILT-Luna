@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Hub Side Path 1"
+            "pathName": "Inverse Hub Side Path 1"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "jiggle"
           }
         },
         {
@@ -26,6 +32,12 @@
           "type": "named",
           "data": {
             "name": "shootEnd"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "endJiggle"
           }
         }
       ]
