@@ -262,34 +262,34 @@ This flowchart shows the execution flow of the Robot.java class, focusing on the
 
 ```mermaid
 flowchart TD
-    A[Robot Power On] --> B[robotInit()]
-    B --> C[RobotContainer Instantiated]
-    C --> D[robotPeriodic() - Every 20ms]
+    A["Robot Power On"] --> B["robotInit()"]
+    B --> C["RobotContainer Instantiated"]
+    C --> D["robotPeriodic() - Every 20ms"]
     
-    D --> E{Driver Station Mode}
+    D --> E{"Driver Station Mode"}
     
-    E -->|Disabled| F[disabledInit()]
-    F --> G[disabledPeriodic()]
+    E -->|"Disabled"| F["disabledInit()"]
+    F --> G["disabledPeriodic()"]
     G --> D
     
-    E -->|Autonomous| H[autonomousInit()]
-    H --> I[Get Autonomous Command from RobotContainer]
-    I --> J[Schedule Autonomous Command]
-    J --> K[autonomousPeriodic()]
+    E -->|"Autonomous"| H["autonomousInit()"]
+    H --> I["Get Autonomous Command from RobotContainer"]
+    I --> J["Schedule Autonomous Command"]
+    J --> K["autonomousPeriodic()"]
     K --> D
     
-    E -->|Teleop| L[teleopInit()]
-    L --> M[Cancel Autonomous Command]
-    M --> N[Set Drive Mode]
-    N --> O[teleopPeriodic()]
+    E -->|"Teleop"| L["teleopInit()"]
+    L --> M["Cancel Autonomous Command"]
+    M --> N["Set Drive Mode"]
+    N --> O["teleopPeriodic()"]
     O --> D
     
-    E -->|Test| P[testInit()]
-    P --> Q[testPeriodic()]
+    E -->|"Test"| P["testInit()"]
+    P --> Q["testPeriodic()"]
     Q --> D
     
-    E -->|Simulation| R[simulationInit()]
-    R --> S[simulationPeriodic()]
+    E -->|"Simulation"| R["simulationInit()"]
+    R --> S["simulationPeriodic()"]
     S --> D
 ```
 
