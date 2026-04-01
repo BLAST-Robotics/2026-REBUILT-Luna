@@ -256,6 +256,64 @@ classDiagram
     RobotContainer --> VisionSubsystem : uses
 ```
 
+## Robot.java Execution Flow
+
+This flowchart shows the execution flow of the Robot.java class, focusing on the different modes (Autonomous, Manual/Teleop, Disabled, Test, Simulation).
+
+```mermaid
+flowchart TD
+    A[Robot Power On] --> B[robotInit()]
+    B --> C[RobotContainer Instantiated]
+    C --> D[robotPeriodic() - Every 20ms]
+    
+    D --> E{Driver Station Mode}
+    
+    E -->|Disabled| F[disabledInit()]
+    F --> G[disabledPeriodic()]
+    G --> D
+    
+    E -->|Autonomous| H[autonomousInit()]
+    H --> I[Get Autonomous Command from RobotContainer]
+    I --> J[Schedule Autonomous Command]
+    J --> K[autonomousPeriodic()]
+    K --> D
+    
+    E -->|Teleop| L[teleopInit()]
+    L --> M[Cancel Autonomous Command]
+    M --> N[Set Drive Mode]
+    N --> O[teleopPeriodic()]
+    O --> D
+    
+    E -->|Test| P[testInit()]
+    P --> Q[testPeriodic()]
+    Q --> D
+    
+    E -->|Simulation| R[simulationInit()]
+    R --> S[simulationPeriodic()]
+    S --> D
+```
+
+### Flow Explanation
+
+**Initialization:**
+- `robotInit()`: Called once at startup, creates RobotContainer and initializes systems
+
+**Main Loop:**
+- `robotPeriodic()`: Runs every 20ms, executes Command Scheduler for all modes
+
+**Autonomous Mode:**
+- `autonomousInit()`: Gets and schedules autonomous command from RobotContainer
+- `autonomousPeriodic()`: Command Scheduler handles autonomous execution
+
+**Manual (Teleop) Mode:**
+- `teleopInit()`: Cancels autonomous commands, sets drive mode for manual control
+- `teleopPeriodic()`: Command Scheduler handles driver input and commands
+
+**Other Modes:**
+- Disabled: Motor brake control with timer
+- Test: Command cancellation and swerve parser initialization
+- Simulation: Simulation-specific initialization and periodic functions
+
 ## Overview
 
 This diagram represents the WPILib command-based robot architecture for the FRC robot code:
