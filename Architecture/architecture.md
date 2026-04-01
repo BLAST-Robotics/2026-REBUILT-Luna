@@ -430,6 +430,48 @@ flowchart TD
 
 ## Autonomous vs Manual Control Comparison
 
+```mermaid
+flowchart TD
+    subgraph "Manual Control (Teleop)"
+        A1["Driver Station: Teleop Mode"]
+        A2["Robot.teleopInit()"]
+        A3["Cancel Autonomous Command"]
+        A4["Set Drive Mode"]
+        A5["Default Drive Command ACTIVE"]
+        A6["Controller Inputs → Drive Command"]
+        A7["drivebase.driveCommand() with lambdas"]
+        A8["SwerveSubsystem receives velocity commands"]
+        
+        A1 --> A2 --> A3 --> A4 --> A5 --> A6 --> A7 --> A8
+    end
+    
+    subgraph "Autonomous Control"
+        B1["Driver Station: Autonomous Mode"] 
+        B2["Robot.autonomousInit()"]
+        B3["Get Autonomous Command"]
+        B4["Schedule Autonomous Command"]
+        B5["PathPlanner Auto Command"]
+        B6["AutoBuilder drives robot"]
+        B7["swerveDrive.drive() or setChassisSpeeds()"]
+        B8["SwerveSubsystem receives velocity commands"]
+        
+        B1 --> B2 --> B3 --> B4 --> B5 --> B6 --> B7 --> B8
+    end
+    
+    subgraph "The Problem"
+        C1["Default Drive Command still running"]
+        C2["Controller inputs = 0 (no controller in auto)"]
+        C3["Default command sends zero velocities"]
+        C4["CONFLICT: Auto + Zero commands"]
+        C5["Robot doesn't move or moves erratically"]
+        
+        C1 --> C2 --> C3 --> C4 --> C5
+    end
+    
+    A5 -.->|"Still active during auto"| C1
+    B6 -.->|"Tries to drive"| C4
+```
+
 ### **The Problem Identified**
 
 **Manual Control (Teleop):**
