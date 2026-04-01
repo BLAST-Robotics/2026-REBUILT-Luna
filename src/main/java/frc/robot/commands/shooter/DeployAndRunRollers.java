@@ -7,8 +7,8 @@ import frc.robot.subsystems.IntakeSubsystem;
 public class DeployAndRunRollers extends ParallelCommandGroup {
     public DeployAndRunRollers(IntakeSubsystem intake) {
         addCommands(
-            new IntakePivotToState(intake, false),
-            new RunIntakeRollers(intake, () -> IntakeConstants.ROLLER_DEFAULT_RPM)
+            new IntakePivotToState(intake, false, false),
+            new RunIntakeRollers(intake, () -> IntakeConstants.ROLLER_DEFAULT_RPM)       
         );
         // addRequirements(intake); // Removed to allow concurrent commands
     }

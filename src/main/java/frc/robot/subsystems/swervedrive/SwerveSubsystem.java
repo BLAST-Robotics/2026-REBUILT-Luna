@@ -76,6 +76,7 @@ public class SwerveSubsystem extends SubsystemBase
   public boolean doRejectUpdate = false;
   public double maximumSpeed = Constants.MAX_SPEED;
   private final Notifier visionNotifier;
+  
 
   // public SwerveSubsystem(File directory)
   // {
@@ -206,10 +207,10 @@ public class SwerveSubsystem extends SubsystemBase
     swerveDrive.setAngularVelocityCompensation(true,
                                                true,
                                                0.1); //Correct for skew that gets worse as angular velocity increases. Start with a coefficient of 0.1.
-    swerveDrive.setModuleEncoderAutoSynchronize(false,
+    swerveDrive.setModuleEncoderAutoSynchronize(true,
                                                 1); // Enable if you want to resynchronize your absolute encoders and motor encoders periodically when they are not moving.
     // swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used over the internal encoder and push the offsets onto it. Throws warning if not possible
-
+    swerveDrive.setChassisDiscretization(true, 0.02); // Discretize the chassis speeds to 20ms intervals to prevent unnecessary updates and improve stability. This should usually be set to true unless you have a very good reason not to.
     setupPathPlanner();
 
     visionNotifier = new Notifier(() -> {
@@ -321,7 +322,7 @@ public class SwerveSubsystem extends SubsystemBase
               // PPHolonomicController is the built in path following controller for holonomic drive trains
               new PIDConstants(1.0, 0.0, 0.0),
               // Translation PID constants
-              new PIDConstants(50.0, 0.0, 0.32)  //used to be 5.0, 0.0, 0.0 for both
+              new PIDConstants(5.0, 0.0, 0.32)  //used to be 5.0, 0.0, 0.0 for both
               // Rotation PID constants
           ),
           config,
@@ -340,7 +341,7 @@ public class SwerveSubsystem extends SubsystemBase
           },
           this
           // Reference to this subsystem to set requirements
-                           );
+        );
 
     } catch (Exception e)
     {
@@ -687,15 +688,7 @@ public class SwerveSubsystem extends SubsystemBase
    */
   public void zeroGyroWithAlliance()
   {
-    if (isRedAlliance())
-    {
-      zeroGyro();
-      //Set the pose 180 degrees
-      resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)));
-    } else
-    {
-      zeroGyro();
-    }
+    zeroGyro(); // Always reset back to zero (YAGSL handles the CCW offset out of the box usually)
   }
 
   /**

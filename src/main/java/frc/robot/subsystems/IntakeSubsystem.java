@@ -12,16 +12,20 @@ import com.revrobotics.spark.SparkBase.ControlType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 
 public class IntakeSubsystem extends SubsystemBase {
     // Pivot: SparkMax + NEO
     private final SparkMax pivotMotor = new SparkMax(IntakeConstants.PIVOT_ID, MotorType.kBrushless);
     private final SparkMaxConfig pivotConfig = new SparkMaxConfig();
 
-    // Rollers: SparkMax + NEO
-    private final SparkMax rollerMotor = new SparkMax(IntakeConstants.ROLLER_ID, MotorType.kBrushless);
-    private final SparkMaxConfig rollerConfig = new SparkMaxConfig();
-    private final SparkClosedLoopController rollerController = rollerMotor.getClosedLoopController();
+    // Rollers: TalonFX + Kraken X60
+    private final TalonFX rollerMotor = new TalonFX(IntakeConstants.ROLLER_ID);
+    private final TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
+    private final VelocityVoltage rollerVelocityRequest = new VelocityVoltage(0);
 
     // Agitator: SparkMax + NEO
     private final SparkMax agitatorMotor = new SparkMax(IntakeConstants.AGITATOR_ID, MotorType.kBrushless);
@@ -32,7 +36,7 @@ public class IntakeSubsystem extends SubsystemBase {
     @SuppressWarnings("removal")
     public IntakeSubsystem() {
         // Pivot Config
-        pivotConfig.idleMode(IdleMode.kBrake);
+        pivotConfig.idleMode(IdleMode.kCoast);
         pivotConfig.smartCurrentLimit(50); // Requested limit
         pivotConfig.inverted(true); // Reversed intake pivot
         
@@ -46,29 +50,22 @@ public class IntakeSubsystem extends SubsystemBase {
         
         pivotMotor.configure(pivotConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
 
-        // Roller Config
-        rollerConfig.idleMode(IdleMode.kCoast);
-        rollerConfig.inverted(true); // Assuming same CCW direction for deploy/intake relative to pivot
-        rollerConfig.smartCurrentLimit(50); // Lowered to 50A
+        // Roller Config (Kraken X60)
+        rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        rollerConfig.MotorOutput.Inverted = com.ctre.phoenix6.signals.InvertedValue.CounterClockwise_Positive; // Assuming true invert
+        rollerConfig.CurrentLimits.StatorCurrentLimit = 40.0;
+        rollerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         
-        // Fast Ramp Rate (0s) to essentially snap to speed for pickup responsiveness
-        rollerConfig.openLoopRampRate(0.1);
-        rollerConfig.closedLoopRampRate(0.0);
+        // PID for velocity control (Kraken uses RPS internally for VelocityVoltage)
+        rollerConfig.Slot0.kP = 0.11; // Basic starting P for Kraken
+        rollerConfig.Slot0.kI = 0.0;
+        rollerConfig.Slot0.kD = 0.0;
+        rollerConfig.Slot0.kV = 0.3; // Basic starting kV for Kraken
         
-        // PID for RPM control
-        rollerConfig.closedLoop.pid(0.0001, 0, 0); // Very small kP to rely mostly on FeedForward
-        rollerConfig.closedLoop.velocityFF(1.0 / 5676.0); // Perfect kV for a NEO
-        
-        // REV Bus Optimizations for Rollers
-        rollerConfig.signals.analogPositionPeriodMs(1000);
-        rollerConfig.signals.analogVelocityPeriodMs(1000);
-        rollerConfig.signals.absoluteEncoderPositionPeriodMs(1000);
-        rollerConfig.signals.absoluteEncoderVelocityPeriodMs(1000);
-        
-        rollerMotor.configure(rollerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        rollerMotor.getConfigurator().apply(rollerConfig);
 
         // Agitator Config
-        agitatorConfig.idleMode(IdleMode.kBrake);
+        agitatorConfig.idleMode(IdleMode.kCoast);
         agitatorConfig.smartCurrentLimit(30);
         agitatorConfig.inverted(IntakeConstants.AGITATOR_INVERT);
 
@@ -102,10 +99,10 @@ public class IntakeSubsystem extends SubsystemBase {
     /**
      * Set roller speed in RPM (at the roller, accounting for 2:1 ratio)
      */
-    @SuppressWarnings("removal")
     public void setRollerRPM(double rpm) {
         double motorRPM = rpm * IntakeConstants.ROLLER_GEAR_RATIO;
-        rollerController.setReference(motorRPM, ControlType.kVelocity);
+        double rps = motorRPM / 60.0;
+        rollerMotor.setControl(rollerVelocityRequest.withVelocity(rps));
     }
 
     public void stopRollers() {

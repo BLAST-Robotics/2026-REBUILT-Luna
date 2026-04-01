@@ -8,11 +8,13 @@ import frc.robot.subsystems.IntakeSubsystem;
 public class IntakePivotToState extends Command {
     private final IntakeSubsystem intake;
     private final boolean up;
+    private final boolean brake;
     private final Timer timer = new Timer();
 
-    public IntakePivotToState(IntakeSubsystem intake, boolean up) {
+    public IntakePivotToState(IntakeSubsystem intake, boolean up, boolean brake) {
         this.intake = intake;
         this.up = up;
+        this.brake = brake;
         // addRequirements(intake); // Removed to allow concurrent commands
     }
 
@@ -37,6 +39,7 @@ public class IntakePivotToState extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        intake.stopPivot();
+        intake.setPivotPower(0);
+        intake.setPivotNeutralMode(brake);
     }
 }
