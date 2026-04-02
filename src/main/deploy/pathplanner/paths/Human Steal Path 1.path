@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5536000000000003,
-        "y": 0.7093333333333327
+        "x": 4.041637010676157,
+        "y": 0.6081969157769855
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.553599999999999,
-        "y": 0.7093333333333327
+        "x": 3.847971530249111,
+        "y": 1.2214709371292987
       },
       "isLocked": false,
       "linkedName": null
@@ -48,7 +48,7 @@
   "folder": "Inverse Paths Safe",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -178.83086067209265
   },
   "useDefaultConstraints": true
 }
