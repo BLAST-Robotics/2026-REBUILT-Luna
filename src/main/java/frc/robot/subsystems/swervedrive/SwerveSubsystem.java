@@ -154,14 +154,14 @@ public class SwerveSubsystem extends SubsystemBase
     double robotY = pose.getY();
 
     if (robotX < 5.5) {
-      double hubX = 4.625;
-      double hubY = 4.025;
+      double hubX = frc.robot.Constants.FieldConstants.HUB_X_OFFSET;
+      double hubY = frc.robot.Constants.FieldConstants.HUB_Y;
       double dist = Math.hypot(hubX - robotX, hubY - robotY);
       SmartDashboard.putNumber("Distance to Hub", dist);
       return new Rotation2d(Math.atan2(hubY - robotY, hubX - robotX));
     } else if (robotX > 11) {
-      double hubX = 11.91;
-      double hubY = 4.03;
+      double hubX = frc.robot.Constants.FieldConstants.FIELD_LENGTH - frc.robot.Constants.FieldConstants.HUB_X_OFFSET;
+      double hubY = frc.robot.Constants.FieldConstants.HUB_Y;
       double dist = Math.hypot(hubX - robotX, hubY - robotY);
       SmartDashboard.putNumber("Distance to Hub", dist);
       return new Rotation2d(Math.atan2(hubY - robotY, hubX - robotX));
@@ -169,6 +169,19 @@ public class SwerveSubsystem extends SubsystemBase
 
     SmartDashboard.putNumber("Distance to Hub", -1.0);
     return null;
+  }
+
+  public double getDistanceToHub() {
+    Pose2d pose = getPose();
+    double robotX = pose.getX();
+    double robotY = pose.getY();
+
+    if (robotX < 5.5) {
+      return Math.hypot(frc.robot.Constants.FieldConstants.HUB_X_OFFSET - robotX, frc.robot.Constants.FieldConstants.HUB_Y - robotY);
+    } else if (robotX > 11) {
+      return Math.hypot((frc.robot.Constants.FieldConstants.FIELD_LENGTH - frc.robot.Constants.FieldConstants.HUB_X_OFFSET) - robotX, frc.robot.Constants.FieldConstants.HUB_Y - robotY);
+    }
+    return -1.0;
   }
 
   /**
@@ -218,10 +231,13 @@ public class SwerveSubsystem extends SubsystemBase
         VisionSubsystem.VisionResult result = VisionSubsystem.getInstance()
             .getVisionResult(); // Without MegaTag2 we no longer pass gyro heading
         if (result != null && result.tagCount > 0) {
-          // swerveDrive.addVisionMeasurement(result.pose, result.timestamp);
+          if (edu.wpi.first.wpilibj.DriverStation.isTeleopEnabled()) {
+            swerveDrive.addVisionMeasurement(result.pose, result.timestamp);
+          }
         }
       }
     });
+
     // Run the vision thread at 50Hz (every 20ms) offset from the main loop
     visionNotifier.startPeriodic(0.02);
     
@@ -247,7 +263,9 @@ public class SwerveSubsystem extends SubsystemBase
         VisionSubsystem.VisionResult result = VisionSubsystem.getInstance()
             .getVisionResult(); // Without MegaTag2 we no longer pass gyro heading
         if (result != null && result.tagCount > 0) {
-          // swerveDrive.addVisionMeasurement(result.pose, result.timestamp);
+          if (edu.wpi.first.wpilibj.DriverStation.isTeleopEnabled()) {
+            swerveDrive.addVisionMeasurement(result.pose, result.timestamp);
+          }
         }
       }
     });

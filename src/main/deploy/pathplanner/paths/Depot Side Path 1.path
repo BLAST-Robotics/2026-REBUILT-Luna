@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.058148556741795,
+        "x": 1.0581485567417954,
         "y": 7.351270304468171
       },
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -30.846587412148615
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Old Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

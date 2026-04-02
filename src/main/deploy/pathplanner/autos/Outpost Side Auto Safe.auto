@@ -17,6 +17,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "jiggle"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 10.0
@@ -27,11 +33,17 @@
           "data": {
             "name": "shootEnd"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "endJiggle"
+          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Autos Safe",
   "choreoAuto": false
 }

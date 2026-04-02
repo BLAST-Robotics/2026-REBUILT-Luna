@@ -110,8 +110,8 @@ public final class Constants
   public static final class FieldConstants
   {
     public static final double FIELD_LENGTH = 16.541;
-    public static final double HUB_X_OFFSET = 4.63;
-    public static final double HUB_Y = 4.1;
+    public static final double HUB_X_OFFSET = 4.625;
+    public static final double HUB_Y = 4.025;
     public static final double HUB_SIDE_Y_UP = 5.5;
     public static final double HUB_SIDE_Y_DOWN = 2.5;
     public static final double TARGET_DISTANCE_TO_HUB = Units.feetToMeters(8.0);

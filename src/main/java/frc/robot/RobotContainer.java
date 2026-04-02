@@ -70,10 +70,9 @@ public class RobotContainer
               double speedMultiplier = (driverXbox.getHID().getRightBumper() || operatorXbox.getHID().getRightBumper()) ? 0.3 : 1.0;
 
               if (autoAim) { 
-                  boolean hasTarget = LimelightHelpers.getTV("limelight");
-                  if (hasTarget) {
-                      double currentDistance = LimelightHelpers.getBotPose3d_TargetSpace("limelight").getTranslation().getNorm();
-                      double distanceError = currentDistance - (8.0 * 0.3048); // 8 feet in meters
+                  double currentDistance = drivebase.getDistanceToHub();
+                  if (currentDistance > 0) {
+                      double distanceError = currentDistance - Constants.FieldConstants.TARGET_DISTANCE_TO_HUB; 
                       // If distanceError > 0, we are too far. We want to move forward.
                       // Positive input to calculate means forward in YAGSL (since joystick Y is negated).
                       double forwardLimelight = distanceError * kP_Range * maxSpeed;
@@ -109,11 +108,14 @@ public class RobotContainer
               double turnMultiplier = invertTurn ? -1.0 : 1.0;
 
               if (autoAim) { 
-                  boolean hasTarget = LimelightHelpers.getTV("limelight");
-                  if (hasTarget) {
-                      // getTX is positive when target is to the right of crosshair.
-                      // We need to rotate right (CW). WPILib standard is CCW positive. So multiply by -1.
-                      double rotLimelight = LimelightHelpers.getTX("limelight") * kP_Aim * maxAngularVelocity * -1.0;
+                  edu.wpi.first.math.geometry.Rotation2d targetRotation = drivebase.getTargetAutoAimRotation();
+                  if (targetRotation != null) {
+                      // We want to turn to targetRotation.
+                      // Current rotation
+                      edu.wpi.first.math.geometry.Rotation2d currentRotation = drivebase.getPose().getRotation();
+                      double rotationError = targetRotation.minus(currentRotation).getRadians();
+                      // WPILib standard is CCW positive. rotationError is positive if we need to turn CCW.
+                      double rotLimelight = rotationError * kP_Aim * maxAngularVelocity;
                       // Cap the rotation speed
                       rotLimelight = MathUtil.clamp(rotLimelight, -maxAngularVelocity * speedMultiplier, maxAngularVelocity * speedMultiplier);
                       return slewEnabled ? rotationLimiter.calculate(rotLimelight) : rotLimelight;

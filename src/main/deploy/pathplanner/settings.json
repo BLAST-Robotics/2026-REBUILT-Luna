@@ -2,8 +2,17 @@
   "robotWidth": 0.9,
   "robotLength": 0.9,
   "holonomicMode": true,
-  "pathFolders": [],
-  "autoFolders": [],
+  "pathFolders": [
+    "Inverse Paths Lockdown",
+    "Inverse Paths Safe",
+    "Inverse Paths Rush",
+    "Old Paths"
+  ],
+  "autoFolders": [
+    "Autos Lockdown",
+    "Autos Safe",
+    "Autos Rush"
+  ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 540.0,
