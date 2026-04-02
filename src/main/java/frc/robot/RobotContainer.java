@@ -111,7 +111,7 @@ public class RobotContainer
         SmartDashboard.putNumber("Swerve Flipped", flip);
         SmartDashboard.putBoolean("Invert Turn", invertTurn);
         
-        drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
+        //drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
     } else {
         autoChooser = new SendableChooser<>();
         SmartDashboard.putData("Auto Chooser", autoChooser);
