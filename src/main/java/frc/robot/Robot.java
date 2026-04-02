@@ -108,6 +108,12 @@ public class Robot extends TimedRobot
     //Print the selected autonomous command upon autonomous init
     System.out.println("Auto selected: " + m_autonomousCommand);
 
+    // CRITICAL FIX: Cancel the default drive command to prevent conflicts
+    // The default drive command (reading controller inputs) interferes with autonomous
+    if (m_robotContainer.getDrivebase() != null) {
+      m_robotContainer.getDrivebase().removeDefaultCommand();
+    }
+
     // schedule the autonomous command selected in the autoChooser
     if (m_autonomousCommand != null)
     {
@@ -137,6 +143,10 @@ public class Robot extends TimedRobot
     }
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
+
+    // CRITICAL FIX: Restore the default drive command for manual control
+    // This ensures the drive command with controller inputs is active again
+    m_robotContainer.restoreDefaultDriveCommand();
   }
 
   /**
