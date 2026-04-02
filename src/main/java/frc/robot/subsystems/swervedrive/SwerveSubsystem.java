@@ -218,7 +218,7 @@ public class SwerveSubsystem extends SubsystemBase
         VisionSubsystem.VisionResult result = VisionSubsystem.getInstance()
             .getVisionResult(); // Without MegaTag2 we no longer pass gyro heading
         if (result != null && result.tagCount > 0) {
-          swerveDrive.addVisionMeasurement(result.pose, result.timestamp);
+          // swerveDrive.addVisionMeasurement(result.pose, result.timestamp);
         }
       }
     });
@@ -247,7 +247,7 @@ public class SwerveSubsystem extends SubsystemBase
         VisionSubsystem.VisionResult result = VisionSubsystem.getInstance()
             .getVisionResult(); // Without MegaTag2 we no longer pass gyro heading
         if (result != null && result.tagCount > 0) {
-          swerveDrive.addVisionMeasurement(result.pose, result.timestamp);
+          // swerveDrive.addVisionMeasurement(result.pose, result.timestamp);
         }
       }
     });

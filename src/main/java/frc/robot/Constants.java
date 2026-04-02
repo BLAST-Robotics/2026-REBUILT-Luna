@@ -38,7 +38,7 @@ public final class Constants
     public static final boolean SWERVE_ENABLED = true;
     public static final boolean INTAKE_ENABLED = true;
     public static final boolean SHOOTER_ENABLED = true;
-    public static final boolean VISION_ENABLED = false;
+    public static final boolean VISION_ENABLED = true;
     public static final boolean AGITATOR_ENABLED = false;
 
     // CAN IDs

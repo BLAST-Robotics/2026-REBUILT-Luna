@@ -38,6 +38,7 @@ public class RobotContainer
   private boolean slewEnabled = true;
   private double flip = 1.0;
   private boolean invertTurn = false;
+  private boolean autoAim = false;
 
   private final SendableChooser<String> autonomousChooser = new SendableChooser<>();
 
@@ -68,24 +69,36 @@ public class RobotContainer
               // SLOW MODE MULTIPLIER
               double speedMultiplier = (driverXbox.getHID().getRightBumper() || operatorXbox.getHID().getRightBumper()) ? 0.3 : 1.0;
 
-              if (driverXbox.b().getAsBoolean()) { 
-                  double forwardLimelight = LimelightHelpers.getTY("limelight") * kP_Range * (maxSpeed * speedMultiplier) * -1.0;
-                  return slewEnabled ? -translationXLimiter.calculate(forwardLimelight) : -forwardLimelight;
+              if (autoAim) { 
+                  boolean hasTarget = LimelightHelpers.getTV("limelight");
+                  if (hasTarget) {
+                      double currentDistance = LimelightHelpers.getBotPose3d_TargetSpace("limelight").getTranslation().getNorm();
+                      double distanceError = currentDistance - (8.0 * 0.3048); // 8 feet in meters
+                      // If distanceError > 0, we are too far. We want to move forward.
+                      // Positive input to calculate means forward in YAGSL (since joystick Y is negated).
+                      double forwardLimelight = distanceError * kP_Range * maxSpeed;
+                      // Cap the forward speed
+                      forwardLimelight = MathUtil.clamp(forwardLimelight, -maxSpeed * speedMultiplier, maxSpeed * speedMultiplier);
+                      return slewEnabled ? translationXLimiter.calculate(forwardLimelight) : forwardLimelight;
+                  }
+                  return 0.0;
               }
               // Normal forward on joystick gives negative Y. YAGSL needs positive for forward.
-              double input = -MathUtil.applyDeadband(driverXbox.getLeftY() * flip, OperatorConstants.LEFT_Y_DEADBAND) * (maxSpeed * speedMultiplier);
+              double rawY = MathUtil.applyDeadband(driverXbox.getLeftY() * flip, OperatorConstants.LEFT_Y_DEADBAND);
+              double input = -(Math.pow(rawY, 3)) * (maxSpeed * speedMultiplier);
               return slewEnabled ? translationXLimiter.calculate(input) : input;
           },
           // Translation Y (Left/Right Strafe) is Left X
           () -> {
               double speedMultiplier = (driverXbox.getHID().getRightBumper() || operatorXbox.getHID().getRightBumper()) ? 0.3 : 1.0;
 
-              if (driverXbox.b().getAsBoolean()) {
+              if (autoAim) {
                   return 0.0; // Stop strafing while auto-aiming
               }
                 // Normal left on joystick gives negative X. YAGSL needs positive for left.
                 // Note: was mathUtil minus, changing back to respect flip cleanly
-                double input = -MathUtil.applyDeadband(driverXbox.getLeftX() * flip, OperatorConstants.LEFT_X_DEADBAND) * (maxSpeed * speedMultiplier);
+                double rawX = MathUtil.applyDeadband(driverXbox.getLeftX() * flip, OperatorConstants.LEFT_X_DEADBAND);
+                double input = -(Math.pow(rawX, 3)) * (maxSpeed * speedMultiplier);
                 return slewEnabled ? translationYLimiter.calculate(input) : input;
 
       
@@ -95,12 +108,21 @@ public class RobotContainer
               double speedMultiplier = (driverXbox.getHID().getRightBumper() || operatorXbox.getHID().getRightBumper()) ? 0.3 : 1.0;
               double turnMultiplier = invertTurn ? -1.0 : 1.0;
 
-              if (driverXbox.b().getAsBoolean()) { 
-                  double rotLimelight = LimelightHelpers.getTX("limelight") * kP_Aim * (maxAngularVelocity * speedMultiplier) * -1.0;
-                  return slewEnabled ? rotationLimiter.calculate(rotLimelight) : rotLimelight;
+              if (autoAim) { 
+                  boolean hasTarget = LimelightHelpers.getTV("limelight");
+                  if (hasTarget) {
+                      // getTX is positive when target is to the right of crosshair.
+                      // We need to rotate right (CW). WPILib standard is CCW positive. So multiply by -1.
+                      double rotLimelight = LimelightHelpers.getTX("limelight") * kP_Aim * maxAngularVelocity * -1.0;
+                      // Cap the rotation speed
+                      rotLimelight = MathUtil.clamp(rotLimelight, -maxAngularVelocity * speedMultiplier, maxAngularVelocity * speedMultiplier);
+                      return slewEnabled ? rotationLimiter.calculate(rotLimelight) : rotLimelight;
+                  }
+                  return 0.0;
               }
               // Invert Turn to make right negative rotation
-              double input = -MathUtil.applyDeadband(driverXbox.getRightX(), OperatorConstants.RIGHT_X_DEADBAND) * (maxAngularVelocity * speedMultiplier) * turnMultiplier;
+              double rawRot = MathUtil.applyDeadband(driverXbox.getRightX(), OperatorConstants.RIGHT_X_DEADBAND);
+              double input = -(Math.pow(rawRot, 3)) * (maxAngularVelocity * speedMultiplier) * turnMultiplier;
               return slewEnabled ? rotationLimiter.calculate(input) : input;
           },
           () -> fieldCentric
@@ -182,6 +204,13 @@ public class RobotContainer
     });
     driverXbox.back().onTrue(toggleSlew);
     operatorXbox.back().onTrue(toggleSlew);
+
+    Command toggleAutoAim = Commands.runOnce(() -> {
+      autoAim = !autoAim;
+      SmartDashboard.putBoolean("Auto Aim", autoAim);
+    });
+    driverXbox.b().onTrue(toggleAutoAim);
+    operatorXbox.b().onTrue(toggleAutoAim);
 
     if (shooter != null) {
       if (drivebase != null) {
