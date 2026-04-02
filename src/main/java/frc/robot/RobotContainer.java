@@ -112,7 +112,7 @@ public class RobotContainer
         SmartDashboard.putNumber("Swerve Flipped", flip);
         SmartDashboard.putBoolean("Invert Turn", invertTurn);
         
-        drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
+        //drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
     } else {
         autoChooser = new SendableChooser<>();
         SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -280,6 +280,59 @@ public class RobotContainer
   {
     if (drivebase != null) {
       drivebase.setMotorBrake(brake);
+    }
+  }
+
+  public SwerveSubsystem getDrivebase() {
+    return drivebase;
+  }
+
+  public void restoreDefaultDriveCommand() {
+    if (drivebase != null) {
+      // Recreate the drive command with current settings
+      final double kP_Aim = 0.035;
+      final double kP_Range = 0.1;
+      final double maxSpeed = Constants.MAX_SPEED;
+      final double maxAngularVelocity = drivebase.getSwerveDrive().getMaximumChassisAngularVelocity();
+
+      Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
+        // Translation X (Forward/Backward) is Left Y
+        () -> {
+            double speedMultiplier = (driverXbox.getHID().getRightBumper() || operatorXbox.getHID().getRightBumper()) ? 0.3 : 1.0;
+
+            if (driverXbox.b().getAsBoolean()) {
+                double forwardLimelight = LimelightHelpers.getTY("limelight") * kP_Range * (maxSpeed * speedMultiplier) * -1.0;
+                return slewEnabled ? -translationXLimiter.calculate(forwardLimelight) : -forwardLimelight;
+            }
+            double input = -MathUtil.applyDeadband(driverXbox.getLeftY() * flip, OperatorConstants.LEFT_Y_DEADBAND) * (maxSpeed * speedMultiplier);
+            return slewEnabled ? translationXLimiter.calculate(input) : input;
+        },
+        // Translation Y (Left/Right Strafe) is Left X
+        () -> {
+            double speedMultiplier = (driverXbox.getHID().getRightBumper() || operatorXbox.getHID().getRightBumper()) ? 0.3 : 1.0;
+
+            if (driverXbox.b().getAsBoolean()) {
+                return 0.0;
+            }
+            double input = -MathUtil.applyDeadband(driverXbox.getLeftX() * flip, OperatorConstants.LEFT_X_DEADBAND) * (maxSpeed * speedMultiplier);
+            return slewEnabled ? translationYLimiter.calculate(input) : input;
+        },
+        // Angular Rotation (Turn)
+        () -> {
+            double speedMultiplier = (driverXbox.getHID().getRightBumper() || operatorXbox.getHID().getRightBumper()) ? 0.3 : 1.0;
+            double turnMultiplier = invertTurn ? -1.0 : 1.0;
+
+            if (driverXbox.b().getAsBoolean()) {
+                double rotLimelight = LimelightHelpers.getTX("limelight") * kP_Aim * (maxAngularVelocity * speedMultiplier) * -1.0;
+                return slewEnabled ? rotationLimiter.calculate(rotLimelight) : rotLimelight;
+            }
+            double input = -MathUtil.applyDeadband(driverXbox.getRightX(), OperatorConstants.RIGHT_X_DEADBAND) * (maxAngularVelocity * speedMultiplier) * turnMultiplier;
+            return slewEnabled ? rotationLimiter.calculate(input) : input;
+        },
+        () -> fieldCentric
+      );
+
+      drivebase.setDefaultCommand(driveFieldOrientedDirectAngle);
     }
   }
 }
